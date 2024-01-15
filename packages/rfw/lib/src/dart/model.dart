@@ -208,6 +208,15 @@ class Switch extends BlobNode {
   String toString() => 'switch $input $outputs';
 }
 
+/// ConstructorBuilder
+class ConstructorBuilder extends BlobNode {
+  /// ConstructorBuilder
+  const ConstructorBuilder(this.scopes, this.constructorCall);
+
+  final List<String> scopes;
+  final ConstructorCall constructorCall;
+}
+
 /// Representation of references to widgets in Remote Flutter Widgets library
 /// blobs.
 class ConstructorCall extends BlobNode {
@@ -268,6 +277,12 @@ class ArgsReference extends Reference {
 
   @override
   String toString() => 'args.${parts.join(".")}';
+}
+
+/// ScopeReference.
+class ScopeReference extends Reference {
+  /// ScopeReference.
+  const ScopeReference(super.parts);
 }
 
 /// Bound reference to arguments.

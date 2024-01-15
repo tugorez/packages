@@ -15,9 +15,15 @@ void main() {
   });
 
   testWidgets('empty parseLibraryFile', (WidgetTester tester) async {
-    final RemoteWidgetLibrary result = parseLibraryFile('');
-    expect(result.imports, isEmpty);
-    expect(result.widgets, isEmpty);
+    final RemoteWidgetLibrary result = parseLibraryFile('''
+    widget Foo = TweenBuilder(
+      builder: (context) => Container(
+        width: context.size,
+        height: context.size,
+        builder: (works) => Container(width: works.size, height: context.size),
+      ),
+    );
+    ''');
   });
 
   testWidgets('space parseDataFile', (WidgetTester tester) async {

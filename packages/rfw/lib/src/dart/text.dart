@@ -620,6 +620,7 @@ class _SymbolToken extends _Token {
   static const int colon = 0x3A; // U+003A COLON character (:)
   static const int semicolon = 0x3B; // U+003B SEMICOLON character (;)
   static const int equals = 0x3D; // U+003D EQUALS SIGN character (=)
+  static const int greatherThan = 0x3E; // U+003D GREATHER THAN character (>)
   static const int openBracket =
       0x5B; // U+005B LEFT SQUARE BRACKET character ([)
   static const int closeBracket =
@@ -803,6 +804,7 @@ Iterable<_Token> _tokenize(String file) sync* {
           case 0x3A: // U+003A COLON character (:)
           case 0x3B: // U+003B SEMICOLON character (;)
           case 0x3D: // U+003D EQUALS SIGN character (=)
+          case 0x3E: // U+003E GREATHER THAN SIGN character (>)
           case 0x5B: // U+005B LEFT SQUARE BRACKET character ([)
           case 0x5D: // U+005D RIGHT SQUARE BRACKET character (])
           case 0x7B: // U+007B LEFT CURLY BRACKET character ({)
@@ -2239,7 +2241,10 @@ class _Parser {
     return results;
   }
 
-  DynamicMap _readMapBody({required bool extended}) {
+  DynamicMap _readMapBody({
+    required bool extended,
+    List<String> scopes = const <String>[],
+  }) {
     final DynamicMap results =
         DynamicMap(); // ignore: prefer_collection_literals
     while (_source.current is! _SymbolToken) {
@@ -2249,7 +2254,11 @@ class _Parser {
             'Duplicate key "$key" in map', _source.current);
       }
       _expectSymbol(_SymbolToken.colon);
-      final Object value = _readValue(extended: extended, nullOk: true);
+      final Object value = _readValue(
+        extended: extended,
+        nullOk: true,
+        scopes: scopes,
+      );
       if (value != missing) {
         results[key] = value;
       }
@@ -2353,13 +2362,19 @@ class _Parser {
     return results;
   }
 
-  Object _readValue({required bool extended, bool nullOk = false}) {
+  Object _readValue({
+    required bool extended,
+    bool nullOk = false,
+    List<String> scopes = const <String>[],
+  }) {
     if (_source.current is _SymbolToken) {
       switch ((_source.current as _SymbolToken).symbol) {
         case _SymbolToken.openBracket:
           return _readList(extended: extended);
         case _SymbolToken.openBrace:
           return _readMap(extended: extended);
+        case _SymbolToken.openParen:
+          return _readConstructorBuilder(scopes: scopes);
       }
     } else if (_source.current is _IntegerToken) {
       final Object result = (_source.current as _IntegerToken).value;
@@ -2398,6 +2413,10 @@ class _Parser {
         _advance();
         return ArgsReference(_readParts());
       }
+      if (scopes.contains(identifier)) {
+        _advance();
+        return ScopeReference(_readParts());
+      }
       if (identifier == 'data') {
         _advance();
         return DataReference(_readParts());
@@ -2429,12 +2448,29 @@ class _Parser {
     throw ParserException._unexpected(_source.current);
   }
 
-  ConstructorCall _readConstructorCall() {
+  ConstructorCall _readConstructorCall({
+    List<String> scopes = const <String>[],
+  }) {
     final String name = _readIdentifier();
     _expectSymbol(_SymbolToken.openParen);
-    final DynamicMap arguments = _readMapBody(extended: true);
+    final DynamicMap arguments = _readMapBody(extended: true, scopes: scopes);
     _expectSymbol(_SymbolToken.closeParen);
     return ConstructorCall(name, arguments);
+  }
+
+  ConstructorBuilder _readConstructorBuilder({
+    List<String> scopes = const <String>[],
+  }) {
+    _expectSymbol(_SymbolToken.openParen);
+    final String scope = _readIdentifier();
+    _expectSymbol(_SymbolToken.closeParen);
+    _expectSymbol(_SymbolToken.equals);
+    _expectSymbol(_SymbolToken.greatherThan);
+    final ConstructorCall constructorCall = _readConstructorCall(scopes: [
+      ...scopes,
+      scope,
+    ]);
+    return ConstructorBuilder(scopes, constructorCall);
   }
 
   WidgetDeclaration _readWidgetDeclaration() {
