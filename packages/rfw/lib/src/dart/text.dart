@@ -609,7 +609,7 @@ abstract class _Token {
 }
 
 class _SymbolToken extends _Token {
-  _SymbolToken(this.symbol, int line, int column): super(line, column);
+  _SymbolToken(this.symbol, int line, int column) : super(line, column);
   final int symbol;
 
   static const int dot = 0x2E;
@@ -620,17 +620,20 @@ class _SymbolToken extends _Token {
   static const int colon = 0x3A; // U+003A COLON character (:)
   static const int semicolon = 0x3B; // U+003B SEMICOLON character (;)
   static const int equals = 0x3D; // U+003D EQUALS SIGN character (=)
-  static const int openBracket = 0x5B; // U+005B LEFT SQUARE BRACKET character ([)
-  static const int closeBracket = 0x5D; // U+005D RIGHT SQUARE BRACKET character (])
+  static const int openBracket =
+      0x5B; // U+005B LEFT SQUARE BRACKET character ([)
+  static const int closeBracket =
+      0x5D; // U+005D RIGHT SQUARE BRACKET character (])
   static const int openBrace = 0x7B; // U+007B LEFT CURLY BRACKET character ({)
-  static const int closeBrace = 0x7D; // U+007D RIGHT CURLY BRACKET character (})
+  static const int closeBrace =
+      0x7D; // U+007D RIGHT CURLY BRACKET character (})
 
   @override
   String toString() => String.fromCharCode(symbol);
 }
 
 class _IntegerToken extends _Token {
-  _IntegerToken(this.value, int line, int column): super(line, column);
+  _IntegerToken(this.value, int line, int column) : super(line, column);
   final int value;
 
   @override
@@ -638,7 +641,7 @@ class _IntegerToken extends _Token {
 }
 
 class _DoubleToken extends _Token {
-  _DoubleToken(this.value, int line, int column): super(line, column);
+  _DoubleToken(this.value, int line, int column) : super(line, column);
   final double value;
 
   @override
@@ -646,7 +649,7 @@ class _DoubleToken extends _Token {
 }
 
 class _IdentifierToken extends _Token {
-  _IdentifierToken(this.value, int line, int column): super(line, column);
+  _IdentifierToken(this.value, int line, int column) : super(line, column);
   final String value;
 
   @override
@@ -654,7 +657,7 @@ class _IdentifierToken extends _Token {
 }
 
 class _StringToken extends _Token {
-  _StringToken(this.value, int line, int column): super(line, column);
+  _StringToken(this.value, int line, int column) : super(line, column);
   final String value;
 
   @override
@@ -690,7 +693,8 @@ class ParserException implements Exception {
   }
 
   factory ParserException._expected(String what, _Token token) {
-    return ParserException('Expected $what but found $token', token.line, token.column);
+    return ParserException(
+        'Expected $what but found $token', token.line, token.column);
   }
 
   factory ParserException._unexpected(_Token token) {
@@ -785,7 +789,6 @@ Iterable<_Token> _tokenize(String file) sync* {
       }
     }
     switch (mode) {
-
       case _TokenizerMode.main:
         switch (current) {
           case -1:
@@ -892,14 +895,16 @@ Iterable<_Token> _tokenize(String file) sync* {
             mode = _TokenizerMode.identifier;
             buffer.add(current);
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)}', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)}', line, column);
         }
 
       case _TokenizerMode.minus: // "-"
         assert(buffer.length == 1 && buffer[0] == 0x2D);
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file after minus sign', line, column);
+            throw ParserException(
+                'Unexpected end of file after minus sign', line, column);
           case 0x30: // U+0030 DIGIT ZERO character (0)
           case 0x31: // U+0031 DIGIT ONE character (1)
           case 0x32: // U+0032 DIGIT TWO character (2)
@@ -913,7 +918,10 @@ Iterable<_Token> _tokenize(String file) sync* {
             mode = _TokenizerMode.minusInteger;
             buffer.add(current);
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} after minus sign (expected digit)', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} after minus sign (expected digit)',
+                line,
+                column);
         }
 
       case _TokenizerMode.zero: // "0"
@@ -966,18 +974,27 @@ Iterable<_Token> _tokenize(String file) sync* {
             mode = _TokenizerMode.x;
             buffer.clear();
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} after zero', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} after zero',
+                line,
+                column);
         }
 
       case _TokenizerMode.minusInteger: // "-0"
         switch (current) {
           case -1:
-            yield _IntegerToken(int.parse(String.fromCharCodes(buffer), radix: 10), line, column);
+            yield _IntegerToken(
+                int.parse(String.fromCharCodes(buffer), radix: 10),
+                line,
+                column);
             yield _EofToken(line, column);
             return;
           case 0x0A: // U+000A LINE FEED (LF)
           case 0x20: // U+0020 SPACE character
-            yield _IntegerToken(int.parse(String.fromCharCodes(buffer), radix: 10), line, column);
+            yield _IntegerToken(
+                int.parse(String.fromCharCodes(buffer), radix: 10),
+                line,
+                column);
             buffer.clear();
             mode = _TokenizerMode.main;
           case 0x28: // U+0028 LEFT PARENTHESIS character (()
@@ -990,7 +1007,10 @@ Iterable<_Token> _tokenize(String file) sync* {
           case 0x5D: // U+005D RIGHT SQUARE BRACKET character (])
           case 0x7B: // U+007B LEFT CURLY BRACKET character ({)
           case 0x7D: // U+007D RIGHT CURLY BRACKET character (})
-            yield _IntegerToken(int.parse(String.fromCharCodes(buffer), radix: 10), line, column);
+            yield _IntegerToken(
+                int.parse(String.fromCharCodes(buffer), radix: 10),
+                line,
+                column);
             buffer.clear();
             yield _SymbolToken(current, line, column);
             mode = _TokenizerMode.main;
@@ -1014,19 +1034,28 @@ Iterable<_Token> _tokenize(String file) sync* {
             mode = _TokenizerMode.e;
             buffer.add(current);
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} after negative zero', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} after negative zero',
+                line,
+                column);
         }
 
       case _TokenizerMode.integer: // "00", "1", "-00"
         switch (current) {
           case -1:
-            yield _IntegerToken(int.parse(String.fromCharCodes(buffer), radix: 10), line, column);
+            yield _IntegerToken(
+                int.parse(String.fromCharCodes(buffer), radix: 10),
+                line,
+                column);
             buffer.clear();
             yield _EofToken(line, column);
             return;
           case 0x0A: // U+000A LINE FEED (LF)
           case 0x20: // U+0020 SPACE character
-            yield _IntegerToken(int.parse(String.fromCharCodes(buffer), radix: 10), line, column);
+            yield _IntegerToken(
+                int.parse(String.fromCharCodes(buffer), radix: 10),
+                line,
+                column);
             buffer.clear();
             mode = _TokenizerMode.main;
           case 0x28: // U+0028 LEFT PARENTHESIS character (()
@@ -1039,7 +1068,10 @@ Iterable<_Token> _tokenize(String file) sync* {
           case 0x5D: // U+005D RIGHT SQUARE BRACKET character (])
           case 0x7B: // U+007B LEFT CURLY BRACKET character ({)
           case 0x7D: // U+007D RIGHT CURLY BRACKET character (})
-            yield _IntegerToken(int.parse(String.fromCharCodes(buffer), radix: 10), line, column);
+            yield _IntegerToken(
+                int.parse(String.fromCharCodes(buffer), radix: 10),
+                line,
+                column);
             buffer.clear();
             yield _SymbolToken(current, line, column);
             mode = _TokenizerMode.main;
@@ -1062,19 +1094,26 @@ Iterable<_Token> _tokenize(String file) sync* {
             mode = _TokenizerMode.e;
             buffer.add(current);
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)}', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)}', line, column);
         }
 
       case _TokenizerMode.integerOnly:
         switch (current) {
           case -1:
-            yield _IntegerToken(int.parse(String.fromCharCodes(buffer), radix: 10), line, column);
+            yield _IntegerToken(
+                int.parse(String.fromCharCodes(buffer), radix: 10),
+                line,
+                column);
             buffer.clear();
             yield _EofToken(line, column);
             return;
           case 0x0A: // U+000A LINE FEED (LF)
           case 0x20: // U+0020 SPACE character
-            yield _IntegerToken(int.parse(String.fromCharCodes(buffer), radix: 10), line, column);
+            yield _IntegerToken(
+                int.parse(String.fromCharCodes(buffer), radix: 10),
+                line,
+                column);
             buffer.clear();
             mode = _TokenizerMode.main;
           case 0x28: // U+0028 LEFT PARENTHESIS character (()
@@ -1087,12 +1126,18 @@ Iterable<_Token> _tokenize(String file) sync* {
           case 0x5D: // U+005D RIGHT SQUARE BRACKET character (])
           case 0x7B: // U+007B LEFT CURLY BRACKET character ({)
           case 0x7D: // U+007D RIGHT CURLY BRACKET character (})
-            yield _IntegerToken(int.parse(String.fromCharCodes(buffer), radix: 10), line, column);
+            yield _IntegerToken(
+                int.parse(String.fromCharCodes(buffer), radix: 10),
+                line,
+                column);
             buffer.clear();
             yield _SymbolToken(current, line, column);
             mode = _TokenizerMode.main;
           case 0x2E: // U+002E FULL STOP character (.)
-            yield _IntegerToken(int.parse(String.fromCharCodes(buffer), radix: 10), line, column);
+            yield _IntegerToken(
+                int.parse(String.fromCharCodes(buffer), radix: 10),
+                line,
+                column);
             buffer.clear();
             mode = _TokenizerMode.dot1;
           case 0x30: // U+0030 DIGIT ZERO character (0)
@@ -1105,15 +1150,20 @@ Iterable<_Token> _tokenize(String file) sync* {
           case 0x37: // U+0037 DIGIT SEVEN character (7)
           case 0x38: // U+0038 DIGIT EIGHT character (8)
           case 0x39: // U+0039 DIGIT NINE character (9)
-            buffer.add(current); // https://github.com/dart-lang/sdk/issues/53349
+            buffer
+                .add(current); // https://github.com/dart-lang/sdk/issues/53349
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in integer', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in integer',
+                line,
+                column);
         }
 
       case _TokenizerMode.numericDot: // "0.", "-0.", "00.", "1.", "-00."
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file after decimal point', line, column);
+            throw ParserException(
+                'Unexpected end of file after decimal point', line, column);
           case 0x30: // U+0030 DIGIT ZERO character (0)
           case 0x31: // U+0031 DIGIT ONE character (1)
           case 0x32: // U+0032 DIGIT TWO character (2)
@@ -1127,18 +1177,23 @@ Iterable<_Token> _tokenize(String file) sync* {
             mode = _TokenizerMode.fraction;
             buffer.add(current);
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in fraction component', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in fraction component',
+                line,
+                column);
         }
 
       case _TokenizerMode.fraction: // "0.0", "-0.0", "00.0", "1.0", "-00.0"
         switch (current) {
           case -1:
-            yield _DoubleToken(double.parse(String.fromCharCodes(buffer)), line, column);
+            yield _DoubleToken(
+                double.parse(String.fromCharCodes(buffer)), line, column);
             yield _EofToken(line, column);
             return;
           case 0x0A: // U+000A LINE FEED (LF)
           case 0x20: // U+0020 SPACE character
-            yield _DoubleToken(double.parse(String.fromCharCodes(buffer)), line, column);
+            yield _DoubleToken(
+                double.parse(String.fromCharCodes(buffer)), line, column);
             buffer.clear();
             mode = _TokenizerMode.main;
           case 0x28: // U+0028 LEFT PARENTHESIS character (()
@@ -1151,7 +1206,8 @@ Iterable<_Token> _tokenize(String file) sync* {
           case 0x5D: // U+005D RIGHT SQUARE BRACKET character (])
           case 0x7B: // U+007B LEFT CURLY BRACKET character ({)
           case 0x7D: // U+007D RIGHT CURLY BRACKET character (})
-            yield _DoubleToken(double.parse(String.fromCharCodes(buffer)), line, column);
+            yield _DoubleToken(
+                double.parse(String.fromCharCodes(buffer)), line, column);
             buffer.clear();
             yield _SymbolToken(current, line, column);
             mode = _TokenizerMode.main;
@@ -1171,13 +1227,20 @@ Iterable<_Token> _tokenize(String file) sync* {
             mode = _TokenizerMode.e;
             buffer.add(current);
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in fraction component', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in fraction component',
+                line,
+                column);
         }
 
-      case _TokenizerMode.e: // "0e", "-0e", "00e", "1e", "-00e", "0.0e", "-0.0e", "00.0e", "1.0e", "-00.0e"
+      case _TokenizerMode
+            .e: // "0e", "-0e", "00e", "1e", "-00e", "0.0e", "-0.0e", "00.0e", "1.0e", "-00.0e"
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file after exponent separator', line, column);
+            throw ParserException(
+                'Unexpected end of file after exponent separator',
+                line,
+                column);
           case 0x2D: // U+002D HYPHEN-MINUS character (-)
             mode = _TokenizerMode.negativeExponent;
             buffer.add(current);
@@ -1194,13 +1257,20 @@ Iterable<_Token> _tokenize(String file) sync* {
             mode = _TokenizerMode.exponent;
             buffer.add(current);
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} after exponent separator', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} after exponent separator',
+                line,
+                column);
         }
 
-      case _TokenizerMode.negativeExponent: // "0e-", "-0e-", "00e-", "1e-", "-00e-", "0.0e-", "-0.0e-", "00.0e-", "1.0e-", "-00.0e-"
+      case _TokenizerMode
+            .negativeExponent: // "0e-", "-0e-", "00e-", "1e-", "-00e-", "0.0e-", "-0.0e-", "00.0e-", "1.0e-", "-00.0e-"
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file after exponent separator and minus sign', line, column);
+            throw ParserException(
+                'Unexpected end of file after exponent separator and minus sign',
+                line,
+                column);
           case 0x30: // U+0030 DIGIT ZERO character (0)
           case 0x31: // U+0031 DIGIT ONE character (1)
           case 0x32: // U+0032 DIGIT TWO character (2)
@@ -1214,18 +1284,24 @@ Iterable<_Token> _tokenize(String file) sync* {
             mode = _TokenizerMode.exponent;
             buffer.add(current);
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in exponent', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in exponent',
+                line,
+                column);
         }
 
-      case _TokenizerMode.exponent: // "0e0", "-0e0", "00e0", "1e0", "-00e0", "0.0e0", "-0.0e0", "00.0e0", "1.0e0", "-00.0e0", "0e-0", "-0e-0", "00e-0", "1e-0", "-00e-0", "0.0e-0", "-0.0e-0", "00.0e-0", "1.0e-0", "-00.0e-0"
+      case _TokenizerMode
+            .exponent: // "0e0", "-0e0", "00e0", "1e0", "-00e0", "0.0e0", "-0.0e0", "00.0e0", "1.0e0", "-00.0e0", "0e-0", "-0e-0", "00e-0", "1e-0", "-00e-0", "0.0e-0", "-0.0e-0", "00.0e-0", "1.0e-0", "-00.0e-0"
         switch (current) {
           case -1:
-            yield _DoubleToken(double.parse(String.fromCharCodes(buffer)), line, column);
+            yield _DoubleToken(
+                double.parse(String.fromCharCodes(buffer)), line, column);
             yield _EofToken(line, column);
             return;
           case 0x0A: // U+000A LINE FEED (LF)
           case 0x20: // U+0020 SPACE character
-            yield _DoubleToken(double.parse(String.fromCharCodes(buffer)), line, column);
+            yield _DoubleToken(
+                double.parse(String.fromCharCodes(buffer)), line, column);
             buffer.clear();
             mode = _TokenizerMode.main;
           case 0x28: // U+0028 LEFT PARENTHESIS character (()
@@ -1238,7 +1314,8 @@ Iterable<_Token> _tokenize(String file) sync* {
           case 0x5D: // U+005D RIGHT SQUARE BRACKET character (])
           case 0x7B: // U+007B LEFT CURLY BRACKET character ({)
           case 0x7D: // U+007D RIGHT CURLY BRACKET character (})
-            yield _DoubleToken(double.parse(String.fromCharCodes(buffer)), line, column);
+            yield _DoubleToken(
+                double.parse(String.fromCharCodes(buffer)), line, column);
             buffer.clear();
             yield _SymbolToken(current, line, column);
             mode = _TokenizerMode.main;
@@ -1254,13 +1331,17 @@ Iterable<_Token> _tokenize(String file) sync* {
           case 0x39: // U+0039 DIGIT NINE character (9)
             buffer.add(current);
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in exponent', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in exponent',
+                line,
+                column);
         }
 
       case _TokenizerMode.x: // "0x", "0X"
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file after 0x prefix', line, column);
+            throw ParserException(
+                'Unexpected end of file after 0x prefix', line, column);
           case 0x30: // U+0030 DIGIT ZERO character (0)
           case 0x31: // U+0031 DIGIT ONE character (1)
           case 0x32: // U+0032 DIGIT TWO character (2)
@@ -1286,18 +1367,27 @@ Iterable<_Token> _tokenize(String file) sync* {
             mode = _TokenizerMode.hex;
             buffer.add(current);
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} after 0x prefix', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} after 0x prefix',
+                line,
+                column);
         }
 
       case _TokenizerMode.hex:
         switch (current) {
           case -1:
-            yield _IntegerToken(int.parse(String.fromCharCodes(buffer), radix: 16), line, column);
+            yield _IntegerToken(
+                int.parse(String.fromCharCodes(buffer), radix: 16),
+                line,
+                column);
             yield _EofToken(line, column);
             return;
           case 0x0A: // U+000A LINE FEED (LF)
           case 0x20: // U+0020 SPACE character
-            yield _IntegerToken(int.parse(String.fromCharCodes(buffer), radix: 16), line, column);
+            yield _IntegerToken(
+                int.parse(String.fromCharCodes(buffer), radix: 16),
+                line,
+                column);
             buffer.clear();
             mode = _TokenizerMode.main;
           case 0x28: // U+0028 LEFT PARENTHESIS character (()
@@ -1310,7 +1400,10 @@ Iterable<_Token> _tokenize(String file) sync* {
           case 0x5D: // U+005D RIGHT SQUARE BRACKET character (])
           case 0x7B: // U+007B LEFT CURLY BRACKET character ({)
           case 0x7D: // U+007D RIGHT CURLY BRACKET character (})
-            yield _IntegerToken(int.parse(String.fromCharCodes(buffer), radix: 16), line, column);
+            yield _IntegerToken(
+                int.parse(String.fromCharCodes(buffer), radix: 16),
+                line,
+                column);
             buffer.clear();
             yield _SymbolToken(current, line, column);
             mode = _TokenizerMode.main;
@@ -1338,7 +1431,10 @@ Iterable<_Token> _tokenize(String file) sync* {
           case 0x66: // U+0066 LATIN SMALL LETTER F character
             buffer.add(current);
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in hex literal', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in hex literal',
+                line,
+                column);
         }
 
       case _TokenizerMode.dot1: // "."
@@ -1445,18 +1541,25 @@ Iterable<_Token> _tokenize(String file) sync* {
             mode = _TokenizerMode.identifier;
             buffer.add(current);
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} after period', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} after period',
+                line,
+                column);
         }
 
       case _TokenizerMode.dot2: // ".."
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside "..." symbol', line, column);
+            throw ParserException(
+                'Unexpected end of file inside "..." symbol', line, column);
           case 0x2E: // U+002E FULL STOP character (.)
             yield _SymbolToken(_SymbolToken.tripleDot, line, column);
             mode = _TokenizerMode.main;
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} inside "..." symbol', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} inside "..." symbol',
+                line,
+                column);
         }
 
       case _TokenizerMode.identifier:
@@ -1553,15 +1656,20 @@ Iterable<_Token> _tokenize(String file) sync* {
           case 0x5F: // U+005F LOW LINE character (_)
             buffer.add(current);
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} inside identifier', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} inside identifier',
+                line,
+                column);
         }
 
       case _TokenizerMode.quote:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside string', line, column);
+            throw ParserException(
+                'Unexpected end of file inside string', line, column);
           case 0x0A: // U+000A LINE FEED (LF)
-            throw ParserException('Unexpected end of line inside string', line, column);
+            throw ParserException(
+                'Unexpected end of line inside string', line, column);
           case 0x27: // U+0027 APOSTROPHE character (')
             yield _StringToken(String.fromCharCodes(buffer), line, column);
             buffer.clear();
@@ -1575,7 +1683,8 @@ Iterable<_Token> _tokenize(String file) sync* {
       case _TokenizerMode.quoteEscape:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside string', line, column);
+            throw ParserException(
+                'Unexpected end of file inside string', line, column);
           case 0x22: // U+0022 QUOTATION MARK character (")
           case 0x27: // U+0027 APOSTROPHE character (')
           case 0x5C: // U+005C REVERSE SOLIDUS character (\)
@@ -1601,13 +1710,17 @@ Iterable<_Token> _tokenize(String file) sync* {
             assert(buffer2.isEmpty);
             mode = _TokenizerMode.quoteEscapeUnicode1;
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} after backslash in string', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} after backslash in string',
+                line,
+                column);
         }
 
       case _TokenizerMode.quoteEscapeUnicode1:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected end of file inside Unicode escape', line, column);
           case 0x30: // U+0030 DIGIT ZERO character (0)
           case 0x31: // U+0031 DIGIT ONE character (1)
           case 0x32: // U+0032 DIGIT TWO character (2)
@@ -1633,13 +1746,17 @@ Iterable<_Token> _tokenize(String file) sync* {
             buffer2.add(current);
             mode = _TokenizerMode.quoteEscapeUnicode2;
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in Unicode escape',
+                line,
+                column);
         }
 
       case _TokenizerMode.quoteEscapeUnicode2:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected end of file inside Unicode escape', line, column);
           case 0x30: // U+0030 DIGIT ZERO character (0)
           case 0x31: // U+0031 DIGIT ONE character (1)
           case 0x32: // U+0032 DIGIT TWO character (2)
@@ -1665,13 +1782,17 @@ Iterable<_Token> _tokenize(String file) sync* {
             buffer2.add(current);
             mode = _TokenizerMode.quoteEscapeUnicode3;
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in Unicode escape',
+                line,
+                column);
         }
 
       case _TokenizerMode.quoteEscapeUnicode3:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected end of file inside Unicode escape', line, column);
           case 0x30: // U+0030 DIGIT ZERO character (0)
           case 0x31: // U+0031 DIGIT ONE character (1)
           case 0x32: // U+0032 DIGIT TWO character (2)
@@ -1697,13 +1818,17 @@ Iterable<_Token> _tokenize(String file) sync* {
             buffer2.add(current);
             mode = _TokenizerMode.quoteEscapeUnicode4;
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in Unicode escape',
+                line,
+                column);
         }
 
       case _TokenizerMode.quoteEscapeUnicode4:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected end of file inside Unicode escape', line, column);
           case 0x30: // U+0030 DIGIT ZERO character (0)
           case 0x31: // U+0031 DIGIT ONE character (1)
           case 0x32: // U+0032 DIGIT TWO character (2)
@@ -1731,15 +1856,20 @@ Iterable<_Token> _tokenize(String file) sync* {
             buffer2.clear();
             mode = _TokenizerMode.quote;
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in Unicode escape',
+                line,
+                column);
         }
 
       case _TokenizerMode.doubleQuote:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside string', line, column);
+            throw ParserException(
+                'Unexpected end of file inside string', line, column);
           case 0x0A: // U+000A LINE FEED (LF)
-            throw ParserException('Unexpected end of line inside string', line, column);
+            throw ParserException(
+                'Unexpected end of line inside string', line, column);
           case 0x22: // U+0022 QUOTATION MARK character (")
             yield _StringToken(String.fromCharCodes(buffer), line, column);
             buffer.clear();
@@ -1753,7 +1883,8 @@ Iterable<_Token> _tokenize(String file) sync* {
       case _TokenizerMode.doubleQuoteEscape:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside string', line, column);
+            throw ParserException(
+                'Unexpected end of file inside string', line, column);
           case 0x22: // U+0022 QUOTATION MARK character (")
           case 0x27: // U+0027 APOSTROPHE character (')
           case 0x5C: // U+005C REVERSE SOLIDUS character (\)
@@ -1779,13 +1910,17 @@ Iterable<_Token> _tokenize(String file) sync* {
             assert(buffer2.isEmpty);
             mode = _TokenizerMode.doubleQuoteEscapeUnicode1;
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} after backslash in string', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} after backslash in string',
+                line,
+                column);
         }
 
       case _TokenizerMode.doubleQuoteEscapeUnicode1:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected end of file inside Unicode escape', line, column);
           case 0x30: // U+0030 DIGIT ZERO character (0)
           case 0x31: // U+0031 DIGIT ONE character (1)
           case 0x32: // U+0032 DIGIT TWO character (2)
@@ -1811,13 +1946,17 @@ Iterable<_Token> _tokenize(String file) sync* {
             buffer2.add(current);
             mode = _TokenizerMode.doubleQuoteEscapeUnicode2;
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in Unicode escape',
+                line,
+                column);
         }
 
       case _TokenizerMode.doubleQuoteEscapeUnicode2:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected end of file inside Unicode escape', line, column);
           case 0x30: // U+0030 DIGIT ZERO character (0)
           case 0x31: // U+0031 DIGIT ONE character (1)
           case 0x32: // U+0032 DIGIT TWO character (2)
@@ -1843,13 +1982,17 @@ Iterable<_Token> _tokenize(String file) sync* {
             buffer2.add(current);
             mode = _TokenizerMode.doubleQuoteEscapeUnicode3;
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in Unicode escape',
+                line,
+                column);
         }
 
       case _TokenizerMode.doubleQuoteEscapeUnicode3:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected end of file inside Unicode escape', line, column);
           case 0x30: // U+0030 DIGIT ZERO character (0)
           case 0x31: // U+0031 DIGIT ONE character (1)
           case 0x32: // U+0032 DIGIT TWO character (2)
@@ -1875,13 +2018,17 @@ Iterable<_Token> _tokenize(String file) sync* {
             buffer2.add(current);
             mode = _TokenizerMode.doubleQuoteEscapeUnicode4;
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in Unicode escape',
+                line,
+                column);
         }
 
       case _TokenizerMode.doubleQuoteEscapeUnicode4:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected end of file inside Unicode escape', line, column);
           case 0x30: // U+0030 DIGIT ZERO character (0)
           case 0x31: // U+0031 DIGIT ONE character (1)
           case 0x32: // U+0032 DIGIT TWO character (2)
@@ -1909,7 +2056,10 @@ Iterable<_Token> _tokenize(String file) sync* {
             buffer2.clear();
             mode = _TokenizerMode.doubleQuote;
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} in Unicode escape', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} in Unicode escape',
+                line,
+                column);
         }
 
       case _TokenizerMode.endQuote:
@@ -1935,19 +2085,28 @@ Iterable<_Token> _tokenize(String file) sync* {
           case 0x2E: // U+002E FULL STOP character (.)
             mode = _TokenizerMode.dot1;
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} after end quote', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} after end quote',
+                line,
+                column);
         }
 
       case _TokenizerMode.slash:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file inside comment delimiter', line, column);
+            throw ParserException(
+                'Unexpected end of file inside comment delimiter',
+                line,
+                column);
           case 0x2A: // U+002A ASTERISK character (*)
             mode = _TokenizerMode.blockComment;
           case 0x2F: // U+002F SOLIDUS character (/)
             mode = _TokenizerMode.comment;
           default:
-            throw ParserException('Unexpected character ${_describeRune(current)} inside comment delimiter', line, column);
+            throw ParserException(
+                'Unexpected character ${_describeRune(current)} inside comment delimiter',
+                line,
+                column);
         }
 
       case _TokenizerMode.comment:
@@ -1965,7 +2124,8 @@ Iterable<_Token> _tokenize(String file) sync* {
       case _TokenizerMode.blockComment:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file in block comment', line, column);
+            throw ParserException(
+                'Unexpected end of file in block comment', line, column);
           case 0x2A: // U+002A ASTERISK character (*)
             mode = _TokenizerMode.blockCommentEnd;
           default:
@@ -1976,7 +2136,8 @@ Iterable<_Token> _tokenize(String file) sync* {
       case _TokenizerMode.blockCommentEnd:
         switch (current) {
           case -1:
-            throw ParserException('Unexpected end of file in block comment', line, column);
+            throw ParserException(
+                'Unexpected end of file in block comment', line, column);
           case 0x2F: // U+002F SOLIDUS character (/)
             mode = _TokenizerMode.main;
           default:
@@ -2007,8 +2168,8 @@ class _Parser {
   }
 
   bool _foundIdentifier(String identifier) {
-    return (_source.current is _IdentifierToken)
-        && ((_source.current as _IdentifierToken).value == identifier);
+    return (_source.current is _IdentifierToken) &&
+        ((_source.current as _IdentifierToken).value == identifier);
   }
 
   void _expectIdentifier(String value) {
@@ -2040,8 +2201,8 @@ class _Parser {
   }
 
   bool _foundSymbol(int symbol) {
-    return (_source.current is _SymbolToken)
-        && ((_source.current as _SymbolToken).symbol == symbol);
+    return (_source.current is _SymbolToken) &&
+        ((_source.current as _SymbolToken).symbol == symbol);
   }
 
   bool _maybeReadSymbol(int symbol) {
@@ -2054,10 +2215,12 @@ class _Parser {
 
   void _expectSymbol(int symbol) {
     if (_source.current is! _SymbolToken) {
-      throw ParserException._expected('symbol "${String.fromCharCode(symbol)}"', _source.current);
+      throw ParserException._expected(
+          'symbol "${String.fromCharCode(symbol)}"', _source.current);
     }
     if ((_source.current as _SymbolToken).symbol != symbol) {
-      throw ParserException._expected('symbol "${String.fromCharCode(symbol)}"', _source.current);
+      throw ParserException._expected(
+          'symbol "${String.fromCharCode(symbol)}"', _source.current);
     }
     _advance();
   }
@@ -2069,19 +2232,21 @@ class _Parser {
     return _readString();
   }
 
-  DynamicMap _readMap({ required bool extended }) {
+  DynamicMap _readMap({required bool extended}) {
     _expectSymbol(_SymbolToken.openBrace);
     final DynamicMap results = _readMapBody(extended: extended);
     _expectSymbol(_SymbolToken.closeBrace);
     return results;
   }
 
-  DynamicMap _readMapBody({ required bool extended }) {
-    final DynamicMap results = DynamicMap(); // ignore: prefer_collection_literals
+  DynamicMap _readMapBody({required bool extended}) {
+    final DynamicMap results =
+        DynamicMap(); // ignore: prefer_collection_literals
     while (_source.current is! _SymbolToken) {
       final String key = _readKey();
       if (results.containsKey(key)) {
-        throw ParserException._fromToken('Duplicate key "$key" in map', _source.current);
+        throw ParserException._fromToken(
+            'Duplicate key "$key" in map', _source.current);
       }
       _expectSymbol(_SymbolToken.colon);
       final Object value = _readValue(extended: extended, nullOk: true);
@@ -2099,7 +2264,7 @@ class _Parser {
 
   final List<String> _loopIdentifiers = <String>[];
 
-  DynamicList _readList({ required bool extended }) {
+  DynamicList _readList({required bool extended}) {
     final DynamicList results = DynamicList.empty(growable: true);
     _expectSymbol(_SymbolToken.openBracket);
     while (!_foundSymbol(_SymbolToken.closeBracket)) {
@@ -2109,7 +2274,8 @@ class _Parser {
         final _Token loopIdentifierToken = _source.current;
         final String loopIdentifier = _readIdentifier();
         if (_reservedWords.contains(loopIdentifier)) {
-          throw ParserException._fromToken('$loopIdentifier is a reserved word', loopIdentifierToken);
+          throw ParserException._fromToken(
+              '$loopIdentifier is a reserved word', loopIdentifierToken);
         }
         _expectIdentifier('in');
         final Object collection = _readValue(extended: true);
@@ -2141,14 +2307,16 @@ class _Parser {
       final Object? key;
       if (_foundIdentifier('default')) {
         if (cases.containsKey(null)) {
-          throw ParserException._fromToken('Switch has multiple default cases', _source.current);
+          throw ParserException._fromToken(
+              'Switch has multiple default cases', _source.current);
         }
         key = null;
         _advance();
       } else {
         key = _readValue(extended: true);
         if (cases.containsKey(key)) {
-          throw ParserException._fromToken('Switch has duplicate cases for key $key', _source.current);
+          throw ParserException._fromToken(
+              'Switch has duplicate cases for key $key', _source.current);
         }
       }
       _expectSymbol(_SymbolToken.colon);
@@ -2164,7 +2332,7 @@ class _Parser {
     return Switch(value, cases);
   }
 
-  List<Object> _readParts({ bool optional = false }) {
+  List<Object> _readParts({bool optional = false}) {
     if (optional && !_foundSymbol(_SymbolToken.dot)) {
       return const <Object>[];
     }
@@ -2185,7 +2353,7 @@ class _Parser {
     return results;
   }
 
-  Object _readValue({ required bool extended, bool nullOk = false }) {
+  Object _readValue({required bool extended, bool nullOk = false}) {
     if (_source.current is _SymbolToken) {
       switch ((_source.current as _SymbolToken).symbol) {
         case _SymbolToken.openBracket:
@@ -2253,7 +2421,8 @@ class _Parser {
       final int index = _loopIdentifiers.lastIndexOf(identifier) + 1;
       if (index > 0) {
         _advance();
-        return LoopReference(_loopIdentifiers.length - index, _readParts(optional: true));
+        return LoopReference(
+            _loopIdentifiers.length - index, _readParts(optional: true));
       }
       return _readConstructorCall();
     }
