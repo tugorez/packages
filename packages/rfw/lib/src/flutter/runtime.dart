@@ -17,6 +17,9 @@ import 'content.dart';
 typedef LocalWidgetBuilder = Widget Function(
     BuildContext context, DataSource source);
 
+/// Foo
+typedef WidgetBuilder = Object Function(DynamicMap scope);
+
 /// Signature of the callback passed to a [RemoteWidget].
 ///
 /// This is used by [RemoteWidget] and [Runtime.build] as the callback for
@@ -117,6 +120,9 @@ abstract class DataSource {
   ///  * [child], which returns an [ErrorWidget] instead of null if the widget
   ///    is missing.
   Widget? optionalChild(List<Object> argsKey);
+
+  ///
+  Widget builder(List<Object> argsKey, DynamicMap scope);
 
   /// Builds the children at the given key.
   ///
@@ -423,6 +429,23 @@ class Runtime extends ChangeNotifier {
           subArguments,
           stateDepth,
           usedWidgets);
+    }
+    if (node is ConstructorBuilder) {
+      return (DynamicMap scope) {
+        final DynamicMap subArguments = _bindArguments(
+          context,
+          node.constructorCall.arguments,
+          arguments,
+          stateDepth,
+          usedWidgets,
+        ) as DynamicMap;
+        return _applyConstructorAndBindArguments(
+          FullyQualifiedWidgetName(context.library, node.constructorCall.name),
+          subArguments,
+          stateDepth,
+          usedWidgets,
+        );
+      };
     }
     if (node is DynamicMap) {
       return node.map<String, Object?>(
@@ -1069,6 +1092,23 @@ class _WidgetState extends State<_Widget> implements DataSource {
           context, widget.data, widget.remoteEventTarget, widget.states);
     }
     return null;
+  }
+
+  @override
+  Widget builder(List<Object> argsKey, DynamicMap scope) {
+    final Object value = _fetch(argsKey, expandLists: false);
+    if (value is WidgetBuilder) {
+      final Object curriedWidget = value(scope);
+      if (curriedWidget is _CurriedWidget) {
+        return curriedWidget.build(
+          context,
+          widget.data,
+          widget.remoteEventTarget,
+          widget.states,
+        );
+      }
+    }
+    return const Text('not a widget builder :(');
   }
 
   @override
